@@ -53,8 +53,8 @@
             </div>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-3">
-                    <div id="splitUploadZone" class="border-2 border-dashed border-indigo-300 rounded-xl p-8 flex flex-col items-center justify-center bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-colors">
-                        <p class="text-gray-700 font-medium text-center">點擊或拖曳大圖至此進行分割</p>
+                    <div id="splitUploadZone" class="border-2 border-dashed border-indigo-300 rounded-xl p-8 flex flex-col items-center justify-center bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-all group min-h-[160px]">
+                        <p class="text-gray-700 font-medium text-center pointer-events-none">點擊或拖曳大圖至此進行分割</p>
                         <input type="file" id="splitFileInput" accept="image/*" class="hidden">
                     </div>
                     <div id="splitPreviewContainer" class="hidden border rounded-lg bg-checker overflow-hidden flex items-center justify-center h-64 relative">
@@ -122,9 +122,9 @@
             </div>
         </div>
 
-        <section id="uploadZone" class="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-gray-50 transition-colors group">
-            <svg class="w-8 h-8 text-gray-300 group-hover:text-indigo-400 mb-2 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            <p class="text-gray-500 text-sm">點擊或拖曳額外圖片加入序列</p>
+        <section id="uploadZone" class="border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center bg-white cursor-pointer hover:bg-gray-50 transition-all group min-h-[120px]">
+            <svg class="w-8 h-8 text-gray-300 group-hover:text-indigo-400 mb-2 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <p class="text-gray-500 text-sm pointer-events-none">點擊或拖曳額外圖片加入序列</p>
             <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
         </section>
 
@@ -139,11 +139,11 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
                 <div>
                     <label class="block text-xs text-indigo-200 mb-1">每幀延遲 (ms)</label>
-                    <input type="number" id="apngDelay" value="100" min="10" step="10" class="w-full bg-indigo-800 border-none rounded-lg p-3 text-white focus:ring-2 focus:yellow-400 outline-none">
+                    <input type="number" id="apngDelay" value="100" min="10" step="10" class="w-full bg-indigo-800 border-none rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-400 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs text-indigo-200 mb-1">迴圈次數 (0=無限)</label>
-                    <input type="number" id="apngLoop" value="0" min="0" class="w-full bg-indigo-800 border-none rounded-lg p-3 text-white focus:ring-2 focus:yellow-400 outline-none">
+                    <input type="number" id="apngLoop" value="0" min="0" class="w-full bg-indigo-800 border-none rounded-lg p-3 text-white focus:ring-2 focus:ring-yellow-400 outline-none">
                 </div>
                 <button id="makeApngBtn" class="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-indigo-900 rounded-lg font-black transition-all transform active:scale-95 shadow-lg flex items-center justify-center gap-2">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M13 10V3L4 14H11V21L20 10H13Z"/></svg>
@@ -162,7 +162,7 @@
 
     <!-- APNG 預覽彈窗 -->
     <div id="apngPreviewModal" class="fixed inset-0 bg-black/90 z-[70] hidden flex flex-col items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-6 flex flex-col items-center">
+        <div class="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-6 flex flex-col items-center text-center">
             <div class="w-full border-b pb-2 flex justify-between items-center">
                 <h3 class="text-lg font-bold text-gray-800">APNG 動畫預覽</h3>
                 <button id="closePreviewBtn" class="text-gray-400 hover:text-red-500 transition-colors">✕ 關閉</button>
@@ -179,7 +179,6 @@
                     確認下載
                 </button>
             </div>
-            <p class="text-[10px] text-gray-400 text-center italic">提示：若動畫不如預期，可關閉預覽後調整畫格順序或延遲時間。</p>
         </div>
     </div>
 
@@ -205,10 +204,10 @@
     </div>
 
     <script>
-        // ================= 核心邏輯 =================
+        // ================= 核心狀態管理 =================
         let filesData = [];
         let currentSplitImage = null;
-        let currentSplitFile = null; // 儲存原始 File 物件供直接匯入使用
+        let currentSplitFile = null; 
         let currentApngBlob = null; 
 
         const gallery = document.getElementById('gallery');
@@ -229,10 +228,53 @@
             onEnd: updateAllFilenames
         });
 
-        // 檔案處理
-        splitUploadZone.onclick = () => document.getElementById('splitFileInput').click();
-        document.getElementById('splitFileInput').onchange = (e) => handleSplitFileUpload(e.target.files[0]);
+        // ================= 檔案處理事件 =================
         
+        // 修正拖曳監聽器：加入 stopPropagation 並確保目標區域正確接收
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Step 1 上傳區域處理
+        splitUploadZone.onclick = () => document.getElementById('splitFileInput').click();
+        document.getElementById('splitFileInput').onchange = (e) => {
+            if (e.target.files.length > 0) handleSplitFileUpload(e.target.files[0]);
+        };
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
+            splitUploadZone.addEventListener(name, preventDefaults, false);
+        });
+
+        splitUploadZone.addEventListener('dragenter', () => splitUploadZone.classList.add('drag-over'), false);
+        splitUploadZone.addEventListener('dragover', () => splitUploadZone.classList.add('drag-over'), false);
+        splitUploadZone.addEventListener('dragleave', () => splitUploadZone.classList.remove('drag-over'), false);
+        splitUploadZone.addEventListener('drop', (e) => {
+            splitUploadZone.classList.remove('drag-over');
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) handleSplitFileUpload(files[0]);
+        }, false);
+
+        // Step 3 工作區上傳處理
+        const uploadZone = document.getElementById('uploadZone');
+        uploadZone.onclick = () => document.getElementById('fileInput').click();
+        document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(name => {
+            uploadZone.addEventListener(name, preventDefaults, false);
+        });
+
+        uploadZone.addEventListener('dragenter', () => uploadZone.classList.add('drag-over'), false);
+        uploadZone.addEventListener('dragover', () => uploadZone.classList.add('drag-over'), false);
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'), false);
+        uploadZone.addEventListener('drop', (e) => {
+            uploadZone.classList.remove('drag-over');
+            const dt = e.dataTransfer;
+            handleFiles(dt.files);
+        }, false);
+
+        // ================= 清除功能邏輯 =================
         document.getElementById('clearSplitImgBtn').onclick = () => {
             if (filesData.length > 0) {
                 clearConfirmModal.classList.remove('hidden');
@@ -251,17 +293,15 @@
             clearConfirmModal.classList.add('hidden');
         };
 
-        document.getElementById('uploadZone').onclick = () => document.getElementById('fileInput').click();
-        document.getElementById('fileInput').onchange = (e) => handleFiles(e.target.files);
         document.getElementById('sortOriginalBtn').onclick = sortItemsByOriginalName;
         document.getElementById('batchDownloadBtn').onclick = handleBatchDownload;
 
-        // 預覽彈窗控制
+        // 預覽視窗按鈕
         document.getElementById('closePreviewBtn').onclick = closePreview;
         document.getElementById('rebuildApngBtn').onclick = closePreview;
         document.getElementById('downloadApngBtn').onclick = () => {
             if (currentApngBlob) {
-                saveAs(currentApngBlob, `sticker_${Date.now()}.png`);
+                saveAs(currentApngBlob, `apng_sticker_${Date.now()}.png`);
             }
         };
 
@@ -274,9 +314,11 @@
             currentApngBlob = null;
         }
 
+        // ================= 核心功能函式 =================
+
         function handleSplitFileUpload(file) {
             if (!file || !file.type.startsWith('image/')) return;
-            currentSplitFile = file; // 儲存原始檔案
+            currentSplitFile = file; 
             const url = URL.createObjectURL(file);
             const img = new Image();
             img.onload = () => {
@@ -306,7 +348,6 @@
             }
         }
 
-        // 修改：不裁切，直接匯入
         document.getElementById('directImportBtn').onclick = async () => {
             if (!currentSplitFile) return;
             showLoading(true, "匯入中...", "正在將原始圖片加入工作區");
@@ -324,15 +365,18 @@
             const chunkW = currentSplitImage.width / cols;
             const chunkH = currentSplitImage.height / rows;
             const canvas = document.createElement('canvas');
-            canvas.width = chunkW; canvas.height = chunkH;
+            canvas.width = chunkW;
+            canvas.height = chunkH;
             const ctx = canvas.getContext('2d');
+            
             const newFiles = [];
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
                     ctx.clearRect(0, 0, chunkW, chunkH);
                     ctx.drawImage(currentSplitImage, x * chunkW, y * chunkH, chunkW, chunkH, 0, 0, chunkW, chunkH);
                     const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-                    newFiles.push(new File([blob], `row-${y+1}-col-${x+1}.png`, { type: 'image/png' }));
+                    const name = `row-${y+1}-col-${x+1}.png`;
+                    newFiles.push(new File([blob], name, { type: 'image/png' }));
                 }
             }
             await handleFiles(newFiles);
@@ -341,7 +385,8 @@
         };
 
         async function handleFiles(files) {
-            for (const file of Array.from(files)) {
+            const fileList = Array.from(files);
+            for (const file of fileList) {
                 if (!file.type.startsWith('image/')) continue;
                 const id = 'img_' + Math.random().toString(36).substr(2, 9);
                 const dataUrl = await new Promise(r => {
@@ -397,26 +442,22 @@
 
         async function handleSingleDownload(id) {
             const fileObj = filesData.find(f => f.id === id);
-            if (!fileObj) return;
-
             const item = gallery.querySelector(`li[data-id="${id}"]`);
-            const outputName = item.dataset.outputName;
             const settings = getCurrentSettings();
-
             const btn = item.querySelector('button[onclick^="handleSingleDownload"]');
-            const originalHTML = btn.innerHTML;
+            
             btn.disabled = true;
+            const originalText = btn.innerHTML;
             btn.innerHTML = `<div class="w-3 h-3 border-2 border-indigo-700 border-t-transparent rounded-full animate-spin"></div>處理中`;
 
             try {
-                const processedBlob = await processImage(fileObj, settings);
-                saveAs(processedBlob, outputName);
-            } catch (err) {
-                console.error(err);
-                alert("處理下載失敗：" + err.message);
+                const blob = await processImage(fileObj, settings);
+                saveAs(blob, item.dataset.outputName);
+            } catch (e) {
+                alert("下載失敗");
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = originalHTML;
+                btn.innerHTML = originalText;
             }
         }
 
@@ -441,16 +482,19 @@
             const img = await blobToImage(fileObj.originalFile);
             let dW = img.width, dH = img.height;
             let sx = 0, sy = 0, sW = img.width, sH = img.height;
+            
             if (settings.resizeMode === 'custom') {
                 dW = settings.customWidth; dH = settings.customHeight;
                 const scale = Math.max(dW / img.width, dH / img.height);
                 sW = dW / scale; sH = dH / scale;
                 sx = (img.width - sW) / 2; sy = (img.height - sH) / 2;
             }
+            
             const canvas = document.createElement('canvas');
             canvas.width = dW; canvas.height = dH;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, sx, sy, sW, sH, 0, 0, dW, dH);
+            
             if (settings.bgRemoval === 'remove') {
                 const idata = ctx.getImageData(0, 0, dW, dH);
                 for (let i = 0; i < idata.data.length; i += 4) {
@@ -458,19 +502,21 @@
                 }
                 ctx.putImageData(idata, 0, 0);
             }
+            
             return new Promise(r => canvas.toBlob(r, settings.outputFormat === 'jpg' ? 'image/jpeg' : 'image/png', 0.9));
         }
 
         document.getElementById('makeApngBtn').onclick = async () => {
             const items = Array.from(gallery.children);
             if (items.length === 0) return;
-            showLoading(true, "APNG 編碼中...", "正在處理影像幀並合成動畫");
+            showLoading(true, "APNG 編碼中...", "正在合成動畫預覽");
             try {
                 const settings = getCurrentSettings();
                 const bufs = [];
                 const delays = [];
                 const delay = parseInt(document.getElementById('apngDelay').value) || 100;
                 const loop = parseInt(document.getElementById('apngLoop').value) || 0;
+                
                 let finalW = 0, finalH = 0;
                 for (let i = 0; i < items.length; i++) {
                     const fileObj = filesData.find(f => f.id === items[i].dataset.id);
@@ -484,32 +530,30 @@
                     bufs.push(ctx.getImageData(0, 0, finalW, finalH).data.buffer);
                     delays.push(delay);
                 }
+                
                 const apngBuffer = UPNG.encode(bufs, finalW, finalH, 0, delays, loop);
                 currentApngBlob = new Blob([apngBuffer], { type: "image/png" });
-                
-                const previewUrl = URL.createObjectURL(currentApngBlob);
-                apngResultImg.src = previewUrl;
+                apngResultImg.src = URL.createObjectURL(currentApngBlob);
                 previewModal.classList.remove('hidden');
-
-            } catch (err) { alert("合成失敗：" + err.message); }
+            } catch (err) { alert("失敗"); }
             finally { showLoading(false); }
         };
 
         async function handleBatchDownload() {
             const items = Array.from(gallery.children);
             if (items.length === 0) return;
-            showLoading(true, "打包中...", "製作 ZIP");
+            showLoading(true, "打包中", "製作 ZIP");
             const zip = new JSZip();
             const settings = getCurrentSettings();
             for (const item of items) {
                 const fileObj = filesData.find(f => f.id === item.dataset.id);
-                const blob = await processImage(fileObj, settings);
-                zip.file(item.dataset.outputName, blob);
+                zip.file(item.dataset.outputName, await processImage(fileObj, settings));
             }
-            saveAs(await zip.generateAsync({type:"blob"}), "package.zip");
+            saveAs(await zip.generateAsync({type:"blob"}), "stickers.zip");
             showLoading(false);
         }
 
+        // ================= 輔助工具 =================
         function blobToImage(blob) {
             return new Promise(r => {
                 const url = URL.createObjectURL(blob);
